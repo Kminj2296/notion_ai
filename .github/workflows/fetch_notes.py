@@ -1,4 +1,4 @@
-import os, json, requests, datetime, pathlib
+import os, json, requests, pathlib
 
 TOKEN   = os.environ['NOTION_TOKEN']
 HEADERS = {"Authorization": f"Bearer {TOKEN}",
@@ -17,10 +17,12 @@ def query():
             ]
         }
     }
-    resp = requests.post(url, headers=HEADERS, data=json.dumps(payload))
-    resp.raise_for_status()
-    return resp.json()["results"]
+    r = requests.post(url, headers=HEADERS, data=json.dumps(payload))
+    r.raise_for_status()
+    return r.json()["results"]
 
 notes = query()
 pathlib.Path('notes.jsonl').write_text(
-    '\n'.join(json.dumps(page) for page in notes), encoding='utf-8')
+    '\n'.join(json.dumps(p) for p in notes),
+    encoding='utf-8')
+print(f"Fetched {len(notes)} notes from Notion")
