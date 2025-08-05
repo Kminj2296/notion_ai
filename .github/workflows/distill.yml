@@ -27,7 +27,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc
-          pip install --quiet openai requests python-slugify pandocfilters
+          pip install --quiet openai==0.28.1 requests python-slugify pandocfilters
+
 
       # 3) 노션에서 ‘sell & new’ 메모 가져오기
       - name: Fetch notes from Notion
