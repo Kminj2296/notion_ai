@@ -20,7 +20,7 @@ jobs:
           pip install --quiet openai requests python-slugify pandocfilters
 
       - name: Fetch notes from Notion
-        run: python fetch_notes.py
+        run: python .github/workflows/fetch_notes.py
         env:
           NOTION_TOKEN:   ${{ secrets.NOTION_TOKEN }}
 
