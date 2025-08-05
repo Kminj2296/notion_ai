@@ -1,11 +1,11 @@
-name: distill            # 워크플로 이름
+name: distill               # 워크플로 이름(자유롭게 변경 가능)
 
 on:
-  workflow_dispatch:     # GitHub에서 수동 실행
-  repository_dispatch:   # Zapier 등이 호출할 때
+  workflow_dispatch:        # GitHub UI에서 수동 실행
+  repository_dispatch:      # Zapier 등이 호출할 때 (event-type: notion_new)
     types: [notion_new]
-  schedule:              # 매 정시 자동 실행
-    - cron: '0 * * * *'
+  schedule:                 # 매 정시에 자동 실행 (UTC)
+    - cron: "0 * * * *"
 
 jobs:
   build:
@@ -13,8 +13,14 @@ jobs:
 
     steps:
       # 1) 레포지토리 체크아웃
-      - name: Checkout repo
+      - name: Check out repository
         uses: actions/checkout@v4
+
+      # (선택) 디버깅용: 현재 디렉터리 트리 출력
+      - name: Show workspace tree
+        run: |
+          pwd
+          ls -R
 
       # 2) 의존성 설치
       - name: Install dependencies
@@ -23,19 +29,19 @@ jobs:
           sudo apt-get install -y pandoc
           pip install --quiet openai requests python-slugify pandocfilters
 
-      # 3) 노션에서 새 메모 가져오기
+      # 3) 노션에서 ‘sell & new’ 메모 가져오기
       - name: Fetch notes from Notion
         run: python fetch_notes.py
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
 
-      # 4) GPT 요약·PDF 변환
+      # 4) GPT 요약 → Markdown → PDF 변환
       - name: Distill to PDF
         run: python distill.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      # 5) Gumroad 상품 업로드
+      # 5) Gumroad 상품 초안(Draft) 업로드
       - name: Upload to Gumroad
         run: python gumroad_upload.py
         env:
