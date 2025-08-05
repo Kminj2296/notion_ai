@@ -1,0 +1,35 @@
+name: distill
+
+on:
+  workflow_dispatch:        # 수동 실행용 버튼
+  repository_dispatch:      # Zapier가 호출
+    types: [notion_new]
+  schedule:
+    - cron: '0 * * * *'     # 매 정시
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          pip install --quiet openai requests python-slugify pandocfilters
+
+      - name: Fetch notes from Notion
+        run: python fetch_notes.py
+        env:
+          NOTION_TOKEN:   ${{ secrets.NOTION_TOKEN }}
+
+      - name: Distill to PDF
+        run: python distill.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload to Gumroad
+        run: python gumroad_upload.py
+        env:
+          GUMROAD_TOKEN:  ${{ secrets.GUMROAD_TOKEN }}
